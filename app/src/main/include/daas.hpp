@@ -758,9 +758,10 @@ public:
         @details Sets the DDO policy for the local node. This policy determines how to manage the unsuccessful sending of DDOs.
         @param policy: the DDO policy to set (ddo_policy_t)
             - @b ddo_policy_skip_on_failure: Skip sending the DDO on failure and deletes it from the sending buffer.
-            - @b ddo_policy_retry_on_failure: Retry sending the DDO at every @ref doPerform cycle.
+            - @b ddo_policy_retry_on_failure: Retry sending the DDO at every @ref doPerform cycle up to a maximum of 16 retries.
             - @b ddo_policy_exponential_backoff_retry_on_failure: Retry sending the DDO with exponential backoff on failure. 
-                         Currently, the backoff starts at 1 minute and doubles with each failure, up to a maximum of 1 hour.
+                         Currently, the backoff starts at 5 seconds and doubles with each failure, up to a maximum of 16 retries.
+                         User may change the maximum retry value by using @ref setOptions.
 
         @note The default policy is @b ddo_policy_skip_on_failure. If the node with mode @b ddo_policy_exponential_backoff_retry_on_failure receives a DDO from the remote node, the 
                 retry timer for that DDO is reset and sending will be retried immediately in the next @ref doPerform cycle. 
@@ -773,6 +774,17 @@ public:
     */
     daas_error_t setDDOPolicy(ddo_policy_t policy);
 
+    /**
+     * @details Create a new network daas network. 
+     * It unbinds the local node from any existing network and initializes a new one with the current configuration.
+     *
+     * @warning After unbinding, the node may no longer be able to communicate with some nodes
+     *          of the previous network, depending on their @ref setAcceptRequestsLevel configuration.
+     *
+     * @return @b ERROR_NONE on success, or an error code on failure.
+     */
+
+    daas_error_t createNetwork(); 
 
     /**
      * @details Unbinds the local node from the current network by closing all open communication channels.
@@ -787,45 +799,34 @@ public:
 
     daas_error_t unbindNetwork(); 
 
-        /**
-         * @details Configures specific options for the DaaS API. This function allows fine-tuning of 
-         * various parameters that affect the behavior of the API.
-         * @param option The type of option to set (option_type):
-         * - @b option_set_ddo_rx_buffer_size: Sets the maximum size of the receive buffer for DDOs. The value is expressed in bytes. 
-         *   If the specified size is smaller than the minimum required to store a DDO without payload plus its header (75 bytes), 
-         *   the value is automatically increased to this minimum (75 bytes).
-         *   @b Note: The default buffer size is 1024 bytes.
-         * 
-         * - @b option_set_ddo_tx_buffer_size: Sets the maximum size of the sending buffer for DDOs. The value is expressed in bytes. 
-         *   If the specified size is smaller than the minimum required to store a DDO without payload plus its header (75 bytes), 
-         *   the value is automatically increased to this minimum (75 bytes).
-         *   @b Note: The default buffer size is 1024 bytes.
-         * 
-         * - @b option_set_rt_buffer_size: Sets the maximum size of the transmit and receive buffers used for real-time sessions. 
-         *   The value is expressed in bytes.
-         *   @b Note: The default buffer size is 1024 bytes.
-         *
-         * @warning When receiving DMEs, the available buffer space is evaluated only after
-         * the reception is completed. As a result, a DDO may still be received even
-         * if its size exceeds the configured buffer limit.
-         * 
-         * @return @b ERROR_NONE on success, or an error code on failure.
-         */
-        daas_error_t setOptions(option_t option, uint32_t val);
-
     /**
-    * @details Retrieves the SID of the local node.
-    *
-    * @return The SID of the local node.
-    */
-    din_t getSid();
-
-    /** 
-     * @details Retrieves the DIN of the local node.
+     * @details Configures specific options for the DaaS API. This function allows fine-tuning of 
+     * various parameters that affect the behavior of the API.
+     * @param option The type of option to set (option_type):
+     * - @b option_set_ddo_rx_buffer_size: Sets the maximum size of the receive buffer for DDOs. The value is expressed in bytes. 
+     *   If the specified size is smaller than the minimum required to store a DDO without payload plus its header (75 bytes), 
+     *   the value is automatically increased to this minimum (75 bytes).
+     *   @b Note: The default buffer size is 1024 bytes.
      * 
-     * @return The DIN of the local node.
-    */
-    din_t getDin();
+     * - @b option_set_ddo_tx_buffer_size: Sets the maximum size of the sending buffer for DDOs. The value is expressed in bytes. 
+     *   If the specified size is smaller than the minimum required to store a DDO without payload plus its header (75 bytes), 
+     *   the value is automatically increased to this minimum (75 bytes).
+     *   @b Note: The default buffer size is 1024 bytes.
+     * 
+     * - @b option_set_rt_buffer_size: Sets the maximum size of the transmit and receive buffers used for real-time sessions. 
+     *   The value is expressed in bytes.
+     *   @b Note: The default buffer size is 1024 bytes.
+     * 
+     * - @b option_set_ddo_max_retry: Sets the maximum number of retry for a ddo. Range is from 1 to 15.
+     *   @b Note: setDDOPolicy has to be set on retry to have effect. The default retry value is set to 10. 
+     *
+     * @warning When receiving DMEs, the available buffer space is evaluated only after
+     * the reception is completed. As a result, a DDO may still be received even
+     * if its size exceeds the configured buffer limit.
+     * 
+     * @return @b ERROR_NONE on success, or an error code on failure.
+     */
+    daas_error_t setOptions(option_t option, uint32_t val);
 
     /**
      * @details Converts a DaaS error code to a human-readable string.

@@ -116,7 +116,8 @@ typedef enum : uint8_t
 {
     option_set_ddo_rx_buffer_size,
     option_set_ddo_tx_buffer_size,
-    option_set_rt_buffer_size
+    option_set_rt_buffer_size,
+    option_set_max_ddo_retry,
 }option_t;
 
 #define flag_trust_mapped  (1 << 0)
@@ -162,6 +163,7 @@ typedef enum
     ERROR_THREADS_ALREADY_STARTED,
     ERROR_NOT_IMPLEMENTED,
     ERROR_TX_QUEUE_FULL,
+    ERROR_TIMEOUT_NOT_EXPIRED,
     ERROR_UNKNOWN
 
 } daas_error_t;

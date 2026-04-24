@@ -2,10 +2,12 @@ package com.sebyone.termotelmre
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sebyone.daas.DaasManager
-import com.sebyone.termotelmre.DeviceStatusDecoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.Inet4Address
@@ -15,8 +17,12 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
     private val TAG = "MRE_LOG"
 
-    // Constants from your original code
-    private val localDin = 102L
+    // UI State
+    var localDin by mutableStateOf(102L)
+        private set
+    var localUri by mutableStateOf("1ab2ddff")
+        private set
+
     private val deviceSid = 100L
     private val cloudNodeDin = 103L
     private val expectedFanUpDin = 0L // UPDATE THIS IF YOU KNOW THE DIN, or leave 0 to accept any
@@ -25,12 +31,27 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
     // UI State: A list of logs to display on screen
     val consoleLogs = mutableStateListOf<String>()
 
+    // Driver constants
+    val driverBle: Byte = 4
+    val driverInet4: Byte = 2
+
     fun appendLog(msg: String) {
         Log.d(TAG, msg)
-        // Ensure UI updates happen on the main thread, though Compose snapshots usually handle this
+        // Ensure UI updates happen on the main thread
         viewModelScope.launch(Dispatchers.Main) {
             consoleLogs.add(0, msg) // Add to top of list
         }
+    }
+
+    fun randomizeDin() {
+        localDin = (101..199).random().toLong()
+        appendLog("Local DIN randomized to: $localDin")
+    }
+
+    fun randomizeUri() {
+        val chars = "0123456789abcdef"
+        localUri = (1..8).map { chars.random() }.joinToString("")
+        appendLog("Local URI randomized to: $localUri")
     }
 
     fun startSequence() {
@@ -38,35 +59,45 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
         val localIp = getLocalIpAddress()
         val uriInet = "$localIp:3031"
-        val driverBle: Byte = 4 // Assuming BLE is 2, update if different (DaasTypes.Link.BLE.value)
-        val driverInet4: Byte = 2 // Assuming INET4 is 1, update if different (DaasTypes.Link.INET4.value)
 
         DaasManager.ddoCallback = this
 
         // 1. Start Agent
-        appendLog("1. Starting Agent (din=$localDin, ble_driver=$driverBle)")
-        DaasManager.startAgent(sid = deviceSid, din = localDin, localUri = "1ab2ddff", driver = driverBle)
+        appendLog("1. Starting Agent (din=$localDin, ble_driver=$driverBle, uri=$localUri)")
+        DaasManager.startAgent(sid = deviceSid, din = localDin, localUri = localUri, driver = driverBle)
 
         // 2. Enable INET4 Driver
         appendLog("2. Enabling INET4 Driver (uri=$uriInet)")
         DaasManager.nativeEnableDriver(uriInet, driverInet4)
 
-        // 3. Map Cloud Node
-        appendLog("3. Mapping Cloud Node (din=$cloudNodeDin, uri=$cloudUri)")
-        DaasManager.nativeMap(cloudNodeDin, cloudUri, driverInet4)
 
         // Start the Daas Background Loop
         Thread { DaasManager.loop() }.start()
 
-        // 4. Start Discovery
-        appendLog("4. Starting Discovery for SID=$deviceSid")
-        Thread {
-            // Firing discovery a few times just to be sure, like your original code
-            for (i in 1..3) {
-                DaasManager.discovery(driverBle, deviceSid)
-                Thread.sleep(2000)
-            }
-        }.start()
+        appendLog("Agent Loop Started. Use buttons to start discovery.")
+    }
+
+    fun triggerDiscovery(driver: Byte) {
+        val driverName = if (driver == driverBle) "BLE" else "INET4"
+        appendLog("Triggering Discovery ($driverName)...")
+        viewModelScope.launch(Dispatchers.IO) {
+            DaasManager.discovery(driver, deviceSid)
+        }
+    }
+
+    fun sendTestDDO(din: Long, value: Byte, typeset: Int) {
+        appendLog("Sending DDO to $din: val=$value, type=$typeset")
+        viewModelScope.launch(Dispatchers.IO) {
+            val r = DaasManager.nativeSendDDO(din, value, typeset)
+            appendLog("-> Send DDO result: $r")
+        }
+    }
+
+    fun mapDevice(din: Long, uri: String, driver: Byte) {
+        appendLog("Mapping device: DIN=$din, URI=$uri, Driver=$driver")
+        viewModelScope.launch(Dispatchers.IO) {
+            DaasManager.nativeMap(din, uri, driver)
+        }
     }
 
     // --- DaaS Callbacks ---
@@ -107,8 +138,10 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
     override fun onNetworkConnected(din: Long) { appendLog("-> Network Connected: $din") }
     override fun onDDOReceivedExtended(origin: Long, typeset: Int, value: Int) { appendLog("-> DDO Received: origin=$origin, type=$typeset, val=$value") }
-    override fun onAutoPull(origin: Long, value: Int) { /* Ignore for MRE */ }
-    override fun onLogDDOReceived(origin: Long, timestamp: Int, logId: Int, logValue: Int) { /* Ignore for MRE */ }
+    override fun onAutoPull(origin: Long, value: Int) { appendLog("-> AutoPull Received: origin=$origin, val=$value") }
+    override fun onLogDDOReceived(origin: Long, timestamp: Int, logId: Int, logValue: Int) {
+        appendLog("-> LOG DDO Received: origin=$origin, ts=$timestamp, id=$logId, val=$logValue")
+    }
 
     private fun getLocalIpAddress(): String {
         return NetworkInterface.getNetworkInterfaces().asSequence()
