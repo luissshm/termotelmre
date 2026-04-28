@@ -49,10 +49,10 @@ class MainActivity : ComponentActivity() {
                 permissionsLauncher.launch(permissions)
             }
 
-            var inputDin by remember { mutableStateOf("0") }
-            var inputValue by remember { mutableStateOf("0") }
-            var inputTypeset by remember { mutableStateOf("0") }
-            var inputUri by remember { mutableStateOf("158.220.97.43:3030") }
+            var inputDin by remember { mutableStateOf("") }
+            var inputValue by remember { mutableStateOf("") }
+            var inputTypeset by remember { mutableStateOf("") }
+            var inputUri by remember { mutableStateOf("") }
 
             Column(
                 modifier = Modifier
@@ -115,12 +115,14 @@ class MainActivity : ComponentActivity() {
                         value = inputDin,
                         onValueChange = { inputDin = it },
                         label = { Text("DIN") },
+                        placeholder = { Text("123") },
                         modifier = Modifier.weight(0.4f)
                     )
                     OutlinedTextField(
                         value = inputUri,
                         onValueChange = { inputUri = it },
                         label = { Text("URI") },
+                        placeholder = { Text("aabbcc11") },
                         modifier = Modifier.weight(0.6f)
                     )
                 }
@@ -137,18 +139,27 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Send DDO Parameters (Value / Type):", fontSize = 14.sp)
+                Text("Send DDO Parameters (DIN / Value / Type):", fontSize = 14.sp)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = inputDin,
+                        onValueChange = { inputDin = it },
+                        label = { Text("DIN") },
+                        placeholder = { Text("123") },
+                        modifier = Modifier.weight(1f)
+                    )
                     OutlinedTextField(
                         value = inputValue,
                         onValueChange = { inputValue = it },
                         label = { Text("Value") },
+                        placeholder = { Text("0") },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = inputTypeset,
                         onValueChange = { inputTypeset = it },
                         label = { Text("Typeset") },
+                        placeholder = { Text("1") },
                         modifier = Modifier.weight(1f)
                     )
                 }
