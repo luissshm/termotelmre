@@ -30,6 +30,7 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
     // UI State: A list of logs to display on screen
     val consoleLogs = mutableStateListOf<String>()
+    val discoveredDins = mutableStateListOf<Long>()
 
     // Driver constants
     val driverBle: Byte = 4
@@ -107,9 +108,12 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
     }
 
     override fun onDinAccepted(din: Long) {
-        appendLog("-> DIN Accepted: $din. Stopping discovery logic.")
-        // Note: You don't explicitly need to stop discovery if you don't call it again,
-        // but this is where you'd set your `discoveryRunning = false`
+        appendLog("-> DIN Accepted: $din")
+        if (!discoveredDins.contains(din)) {
+            viewModelScope.launch(Dispatchers.Main) {
+                discoveredDins.add(din)
+            }
+        }
     }
 
     override fun onStatusReportReceived(origin: Long, typeset: Int, payload: ByteArray) {

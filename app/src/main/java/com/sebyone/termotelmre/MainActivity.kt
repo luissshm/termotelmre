@@ -179,21 +179,35 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Terminal-like output
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black)
-                        .padding(8.dp),
-                    reverseLayout = true // Newest logs at the bottom (visually top because reversed)
+                        .padding(8.dp)
                 ) {
-                    items(viewModel.consoleLogs) { log ->
+                    if (viewModel.discoveredDins.isNotEmpty()) {
                         Text(
-                            text = log,
-                            color = Color.Green,
+                            text = "Accepted DINs: ${viewModel.discoveredDins.joinToString(", ")}",
+                            color = Color.Yellow,
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        reverseLayout = true
+                    ) {
+                        items(viewModel.consoleLogs) { log ->
+                            Text(
+                                text = log,
+                                color = Color.Green,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
                     }
                 }
             }
