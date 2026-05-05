@@ -255,11 +255,12 @@ Java_com_sebyone_daas_DaasManager_nativePerform(
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_sebyone_daas_DaasManager_nativeSendDDO(JNIEnv*, jclass, din_t remoteDin, jbyte value, jbyte tset) {
+Java_com_sebyone_daas_DaasManager_nativeSendDDO(JNIEnv*, jclass, din_t remoteDin, jlong value, jbyte tset) {
     DDO ddo(tset);
-    ddo.setPayload(&value, 1);
 
-    din_t rawDin = remoteDin << 44; // <-- ADD THIS SHIFT
+    ddo.setPayload(&value, 8);
+
+    din_t rawDin = remoteDin; // <-- ADD THIS SHIFT
     auto err = g_daas->push(rawDin, &ddo); // Use rawDin here
 
     return err;
@@ -427,15 +428,58 @@ Java_com_sebyone_daas_DaasManager_nativeSendDDOBytes(
     return err;
 }
 
+
+
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_sebyone_daas_DaasManager_nativeUnbindNetwork(
-        JNIEnv* env, jclass) {
-
-    LOGD("[DaaS] Unbounding network...");
-
-    auto err = g_daas->unbindNetwork();
-
-    LOGD("[DaaS] unbindNetwork() -> %d", err);
+Java_com_sebyone_daas_DaasManager_nativeSimpleDiscovery(JNIEnv *env, jobject thiz, jlong sid) {
+    LOGD("[DaaS] Discovering trought SID: %ld ", sid);
+    auto err = g_daas->discovery(sid);
     return err;
+
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_sebyone_daas_DaasManager_nativeUnbindNetwork(JNIEnv *env, jobject thiz) {
+    LOGD("[DaaS] UnbindingNetwork");
+    auto err = g_daas->unbindNetwork();
+    return err;
+}
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_sebyone_daas_DaasManager_nativeGetSystemStatistics(
+        JNIEnv *env,
+        jobject thiz,
+        jint syscode
+) {
+    LOGD("[DaaS] Obtaining System Statistics for ID= %d", syscode);
+
+    if (g_daas == nullptr) {
+        LOGD("[DaaS] ERROR: g_daas is null");
+        return -1;
+    }
+
+    auto code = static_cast<syscode_t>(syscode);
+    auto result = g_daas->getSystemStatistics(code);
+
+    LOGD("[DaaS] System Statistics result = %ld", static_cast<long>(result));
+
+    return static_cast<jlong>(result);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sebyone_daas_DaasManager_nativeSetDiscoveryState(JNIEnv *env, jobject thiz, jint state) {
+    LOGD("[DaaS] Setting discovery state");
+
+    auto discstate = (discovery_state_t) state;
+    g_daas->setDiscoveryState(discstate);
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sebyone_daas_DaasManager_nativeRemove(JNIEnv *env, jobject thiz, jlong din) {
+    LOGD("[DaaS] Removing node from map...");
+    auto err = g_daas->remove(din);
+    LOGD("[DaaS] RemoveNode: Error code: %u", err);
+
 }

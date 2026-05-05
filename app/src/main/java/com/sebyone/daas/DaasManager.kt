@@ -11,22 +11,42 @@ object DaasManager {
     private const val TAG = "DaaS"
     // Listener for UI callbacks
     var ddoCallback: Any? = null
+    private val acceptedDins = mutableSetOf<Long>()
+
+    fun getListDinAccepted(): List<Long> {
+        return acceptedDins.toList()
+    }
+
+    fun clearDinAccepted() {
+        acceptedDins.clear()
+    }
+
+
 
     external fun nativeCreate()
     external fun nativeInit(sid: Long, din: Long): Int
     external fun nativeEnableDriver(uri: String, driver: Byte): Int
     external fun nativePerform(): Int
-    external fun nativeSendDDO(din: Long, value: Byte, typeset: Int): Int
+    external fun nativeSendDDO(din: Long, value: Long, typeset: Int): Int
     external fun nativeListDrivers(): String
     external fun nativeAutoPull(remoteDin: Long)
     external fun nativeDiscovery(driver: Byte, sid: Long)
+
+    external fun nativeSimpleDiscovery(sid: Long): Int
+
     external fun nativeSetDiscoveryStateFull()
+    external fun nativeSetDiscoveryState(state: Int)
+
     external fun nativeSendDDOBytes(din: Long, payload: ByteArray, typeset: Int): Int
     external fun redirectLogs()
     external fun nativeMap(din: Long, uri: String, driver: Byte)
 
     external fun nativeLocate(din: Long, timeoutMs: Int = 1000): Int
-    external fun nativeUnbindNetwork()
+    external fun nativeUnbindNetwork(): Int
+
+    external fun nativeRemove(din: Long)
+
+    external fun nativeGetSystemStatistics(syscode: Int): Long
 
     fun startAgent(sid: Long, din: Long, localUri: String, driver: Byte) {
         redirectLogs()
@@ -42,7 +62,7 @@ object DaasManager {
 
         val enable = nativeEnableDriver(localUri, driver)
         Log.d(TAG, "enableDriver result = $enable")
-        setDiscoveryStateFull()
+        setDiscoveryState(1)
         Log.d(TAG, "Node ready")
 
 
@@ -53,11 +73,11 @@ object DaasManager {
         Log.d(TAG, "discovery result = $r")
     }
 
-    fun setDiscoveryStateFull() {
-        nativeSetDiscoveryStateFull()
+    fun setDiscoveryState(state: Int) {
+        nativeSetDiscoveryState(state)
     }
 
-    fun sendTestDDO(din: Long, value: Byte, typeset: Int) {
+    fun sendTestDDO(din: Long, value: Long, typeset: Int) {
         Log.d(TAG, "Sending DDO value=$value")
         val r = nativeSendDDO(din, value, typeset)
         Log.d(TAG, "push result = $r")
@@ -106,8 +126,10 @@ object DaasManager {
 
     @JvmStatic
     fun onDinAccepted(din: Long) {
+        acceptedDins.add(din)
         (ddoCallback as? dynamicListener)?.onDinAccepted(din)
     }
+
 
     @JvmStatic
     fun onNetworkConnected(din: Long) {
@@ -131,6 +153,8 @@ object DaasManager {
     fun onStatusReportReceived(origin: Long, typeset: Int, payload: ByteArray) {
         (ddoCallback as? dynamicListener)?.onStatusReportReceived(origin, typeset, payload)
     }
+
+
 
     interface dynamicListener {
 

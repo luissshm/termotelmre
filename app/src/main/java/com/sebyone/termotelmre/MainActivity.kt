@@ -30,6 +30,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
+            var discoveryInput by remember { mutableStateOf("") }
+            var showDiscoveryList by remember { mutableStateOf(false) }
+            var configSidInput by remember { mutableStateOf("") }
+
             val permissionsLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestMultiplePermissions()
             ) { /* Handle results if needed */ }
@@ -107,6 +112,46 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text("Discovery Input:", fontSize = 14.sp)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = discoveryInput,
+                        onValueChange = { discoveryInput = it },
+                        label = { Text("Input") },
+                        placeholder = { Text("SID, es. 100") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.triggerDiscoveryInput(discoveryInput)
+                        }
+                    ) {
+                        Text("Discovery(input)")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        showDiscoveryList = !showDiscoveryList
+                        if (showDiscoveryList) {
+                            viewModel.refreshAcceptedDins()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (showDiscoveryList) "SHOW CONSOLE" else "SHOW DISCOVERY LIST")
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("Common Parameters (DIN / URI):", fontSize = 14.sp)
@@ -167,7 +212,7 @@ class MainActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         val din = inputDin.toLongOrNull() ?: 0L
-                        val value = inputValue.toIntOrNull()?.toByte() ?: 0
+                        val value = inputValue.toIntOrNull()?.toLong() ?: 0
                         val typeset = inputTypeset.toIntOrNull() ?: 0
                         viewModel.sendTestDDO(din, value, typeset)
                     },
@@ -179,21 +224,67 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Terminal-like output
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black)
-                        .padding(8.dp),
-                    reverseLayout = true // Newest logs at the bottom (visually top because reversed)
-                ) {
-                    items(viewModel.consoleLogs) { log ->
-                        Text(
-                            text = log,
-                            color = Color.Green,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
+                if (showDiscoveryList) {
+
+                    OutlinedTextField(
+                        value = configSidInput,
+                        onValueChange = { configSidInput = it },
+                        label = { Text("SID config") },
+                        placeholder = { Text("100") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .padding(8.dp)
+                    ) {
+                        items(viewModel.discoveredDins) { din ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "DIN: $din",
+                                    color = Color.Green,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 14.sp
+                                )
+
+                                Button(
+                                    onClick = {
+                                        val sid = configSidInput.toLongOrNull() ?: 0L
+                                        viewModel.sendNetworkConfiguration(din, sid)
+                                    }
+                                ) {
+                                    Text("SEND CONFIG")
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .padding(8.dp),
+                        reverseLayout = true
+                    ) {
+                        items(viewModel.consoleLogs) { log ->
+                            Text(
+                                text = log,
+                                color = Color.Green,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
                     }
                 }
             }
