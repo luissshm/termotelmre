@@ -17,20 +17,68 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
     private val TAG = "MRE_LOG"
 
+
+    val discoveredDins = mutableStateListOf<Long>()
+
+    fun refreshAcceptedDins() {
+        discoveredDins.clear()
+        discoveredDins.addAll(DaasManager.getListDinAccepted())
+    }
+
+    fun clearAcceptedDins() {
+        DaasManager.clearDinAccepted()
+        discoveredDins.clear()
+        appendLog("Accepted DIN list cleared")
+    }
+
+    fun triggerDiscoveryInput(input: String) {
+        val sid = input.toLongOrNull() ?: deviceSid
+
+        appendLog("Triggering Discovery with input SID=$sid")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            DaasManager.discovery(driverBle, sid)
+            refreshAcceptedDins()
+        }
+    }
+
+    fun sendNetworkConfiguration(din: Long, sid: Long) {
+        appendLog("Sending network configuration to DIN=$din")
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+            var value = DaasManager.nativeGetSystemStatistics(5);
+            DaasManager.sendTestDDO(din,sid,1)
+            while(true) {
+                Thread.sleep(1000)
+                var new_val = DaasManager.nativeGetSystemStatistics(5);
+                if(new_val == 0L){
+                    break;
+                }
+            }
+            var err = DaasManager.nativeUnbindNetwork();
+            clearAcceptedDins();
+            DaasManager.nativeRemove(din);
+
+            appendLog("Network configuration function done, ERROR_CODE= $err");
+        }
+    }
+
+
     // UI State
-    var localDin by mutableStateOf(102L)
+    var localDin by mutableStateOf(101L)
         private set
     var localUri by mutableStateOf("1ab2ddff")
         private set
 
-    private val deviceSid = 100L
+
+    private val deviceSid = 100L //DEFAULT
     private val cloudNodeDin = 103L
     private val expectedFanUpDin = 0L // UPDATE THIS IF YOU KNOW THE DIN, or leave 0 to accept any
     private val cloudUri = "158.220.97.43:3030"
 
     // UI State: A list of logs to display on screen
     val consoleLogs = mutableStateListOf<String>()
-    val discoveredDins = mutableStateListOf<Long>()
 
     // Driver constants
     val driverBle: Byte = 4
@@ -86,7 +134,7 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
         }
     }
 
-    fun sendTestDDO(din: Long, value: Byte, typeset: Int) {
+    fun sendTestDDO(din: Long, value: Long, typeset: Int) {
         appendLog("Sending DDO to $din: val=$value, type=$typeset")
         viewModelScope.launch(Dispatchers.IO) {
             val r = DaasManager.nativeSendDDO(din, value, typeset)
@@ -109,8 +157,9 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
 
     override fun onDinAccepted(din: Long) {
         appendLog("-> DIN Accepted: $din")
-        if (!discoveredDins.contains(din)) {
-            viewModelScope.launch(Dispatchers.Main) {
+
+        viewModelScope.launch(Dispatchers.Main) {
+            if (!discoveredDins.contains(din)) {
                 discoveredDins.add(din)
             }
         }
