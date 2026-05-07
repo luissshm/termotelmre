@@ -80,6 +80,7 @@ typedef enum : unsigned // Supported communications technologies
     _LINK_LORA,     // LoRa
     _LINK_ZIGBEE,   // Zigbee
     _LINK_RAW,
+    _LINK_LEGACY,  // Legacy driver (TUN/TAP)
     MAX_LINKS
 } link_t;
 
@@ -118,7 +119,26 @@ typedef enum : uint8_t
     option_set_ddo_tx_buffer_size,
     option_set_rt_buffer_size,
     option_set_max_ddo_retry,
+    option_enable_auto_route_on_push_failure,    //ROUTE() Implementation: if enabled, the node will automatically attempt to route a packet to the destination if a push operation fails due to the destination being unreachable
+    option_set_route_timeout,                    //ROUTE() Implementation: time (in ms) to wait for a response to a route request before considering the route request failed and, if auto_route_on_push_failure is enabled, attempting to route the packet through an alternate path   
+    option_set_route_ttl,                        //ROUTE() Implementation: time-to-live (in ms) for a route, i.e. the maximum amount of time that a route can be used for routing packets before it is considered stale and a new route discovery process is triggered
+    option_set_packet_status_queue_size,         //ROUTE() Implementation: size of the queue used to store the status of packets that are being routed
 }option_t;
+
+typedef enum : uint8_t
+{
+    packet_state_sent = 0,    //ROUTE() Implementation: packet has been sent
+    packet_state_delegated,   //ROUTE() Implementation: packet has been delegated to another node for routing (e.g. in case of auto-routing or routing to unreachable nodes)
+    packet_state_inqueue,     //ROUTE() Implementation: packet is in the routing queue, waiting to be sent
+    packet_state_error,       //ROUTE() Implementation: an error occurred during the routing process (e.g. route discovery failed, route request timed out, etc.)
+} packet_state_t;
+
+struct packet_status_t
+{
+    din_t din;
+    uint8_t state;
+    uint8_t error;
+};
 
 #define flag_trust_mapped  (1 << 0)
 #define flag_trust_same_network  (1 << 1)
@@ -164,6 +184,7 @@ typedef enum
     ERROR_NOT_IMPLEMENTED,
     ERROR_TX_QUEUE_FULL,
     ERROR_TIMEOUT_NOT_EXPIRED,
+    ERROR_ROUTE_NOT_FOUND,          //ROUTE() Implementation: no route found to the destination
     ERROR_UNKNOWN
 
 } daas_error_t;
@@ -286,13 +307,11 @@ public:
      */
     virtual void frisbeeDperfCompleted(din_t, uint32_t packets_sent, uint32_t block_size)= 0;
     /**
-        @details Called when a new node is discovered in the network.
-        @param din The din of the newly discovered node.
-        @param link The link through which the node was discovered.
-    
-        @warning The node might have not be accepted yet, this event is just to inform that a new node has been seen.
+        @details Called when a new network is discovered.
+        @param din The sid of the newly discovered network.
+        @param link The link through which the network was discovered.
     */
-    virtual void nodeDiscovered(din_t din, link_t link) = 0;
+    virtual void networkDiscovered(din_t din, din_t sid, link_t link) = 0;
 
     /**
         @details Called when this node connects to a DaaS network.
@@ -358,8 +377,38 @@ typedef struct
 
 } node_info_t;
 
+enum feature_t : uint16_t {
+    STORAGE = (1 << 0),        // Node supports storage features
+    COMPUTE = (1 << 1),        // Node supports compute features
+    MAX_FEATURE = COMPUTE,
+};
+
+enum feature_action_e : uint8_t {
+    feature_storage_retrieve_blob = 0,
+    feature_storage_send_blob,
+    features_storage_find_blob,
+    feature_storage_register_blob,
+    none
+};
+
+struct node_network_info_t
+{
+    din_t sid;         
+    din_t din;         
+};
+
+struct feature_rq_t
+{
+    feature_t feature;
+    feature_action_e request;
+    uint8_t params[16]; // Optional parameters for the feature request
+    uint8_t payload[128];
+};
+
 typedef Vector<int> list_element;
-typedef Vector<din_t> dinlist_t;      /// Node API !!!!!!!!!!!!!!
-typedef Vector<typeset_t> tsetlist_t; /// Node API !!!!!!!!!!!!!!
+typedef Vector<node_network_info_t> network_info_list_t;      /// Node API !!!!!!!!!!!!!!
+typedef Vector<typeset_t> typeset_list; /// Node API !!!!!!!!!!!!!!
+typedef Vector<feature_t> features_list; /// Node API !!!!!!!!!!!!!!
+
 
 #endif // !_DAAS_TYPES_H__
