@@ -436,6 +436,7 @@ public:
         @end
     */
     network_info_list_t listNodes(); // Returns map entries  (knows nodes) ( {din1, sid1}, {din2, sid2}, ... )
+    node_map_list_t getNodeList(); // Returns mapped nodes with link and URI/channel information.
 
     /**
         @details It starts a process to locate the node if it is not inside the known table.
@@ -512,6 +513,16 @@ public:
         @end
     */
     uint64_t getSyncedTimestamp();
+
+
+
+    /**
+        @details Returns the list of the nodes (DINs) in the specified SID.
+        @since 0.22.0
+        @param sid: SID of the network to filter the nodes by.
+    
+    */
+    Vector<din_t> getAllNodes(din_t sid); // Returns the list of currently mapped nodes (DINs) in the local instance.
 
     /* Security     -------------------------------------------------------------------------------------------- */
 

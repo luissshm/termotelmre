@@ -123,6 +123,9 @@ typedef enum : uint8_t
     option_set_route_timeout,                    //ROUTE() Implementation: time (in ms) to wait for a response to a route request before considering the route request failed and, if auto_route_on_push_failure is enabled, attempting to route the packet through an alternate path   
     option_set_route_ttl,                        //ROUTE() Implementation: time-to-live (in ms) for a route, i.e. the maximum amount of time that a route can be used for routing packets before it is considered stale and a new route discovery process is triggered
     option_set_packet_status_queue_size,         //ROUTE() Implementation: size of the queue used to store the status of packets that are being routed
+
+    option_set_fetch_timeout,                   //FTC() Implementation: time (in ms) to wait for a response to a fetch request before considering the fetch request failed
+
 }option_t;
 
 typedef enum : uint8_t
@@ -397,6 +400,14 @@ struct node_network_info_t
     din_t din;         
 };
 
+struct node_map_entry_t
+{
+    din_t din;
+    link_t link;
+    char uri[256];
+    bool direct_channel;
+};
+
 struct feature_rq_t
 {
     feature_t feature;
@@ -407,6 +418,7 @@ struct feature_rq_t
 
 typedef Vector<int> list_element;
 typedef Vector<node_network_info_t> network_info_list_t;      /// Node API !!!!!!!!!!!!!!
+typedef Vector<node_map_entry_t> node_map_list_t;
 typedef Vector<typeset_t> typeset_list; /// Node API !!!!!!!!!!!!!!
 typedef Vector<feature_t> features_list; /// Node API !!!!!!!!!!!!!!
 

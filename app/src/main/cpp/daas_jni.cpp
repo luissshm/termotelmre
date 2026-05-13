@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <android/log.h>
 #include "daas.hpp"
 
@@ -479,4 +480,49 @@ Java_com_sebyone_daas_DaasManager_nativeRemove(JNIEnv *env, jobject thiz, jlong 
     auto err = g_daas->remove(din);
     LOGD("[DaaS] RemoveNode: Error code: %u", err);
 
+}
+
+// Vector<din_t> getAllNodes(din_t sid);
+extern "C"
+JNIEXPORT jlongArray JNICALL
+Java_com_sebyone_daas_DaasManager_nativeGetAllNodes(JNIEnv *env, jclass, din_t sid) {
+    // 1. Get the data from daas
+    auto list = g_daas->getAllNodes(sid);
+    jsize length = static_cast<jsize>(list.size());
+
+    // 2. Build the string representation of the vector
+    std::stringstream ss;
+    ss << "{ ";
+    for (size_t i = 0; i < list.size(); ++i) {
+        ss << list[i];
+        // Add a comma between elements, but not after the last one
+        if (i < list.size() - 1) {
+            ss << ", ";
+        }
+    }
+    ss << " }";
+
+    // 3. Print the completed string
+    // .str() extracts the std::string, and .c_str() converts it to a standard C-string for the %s formatter
+    LOGD("[DaaS] Nodes = %s", ss.str().c_str());
+
+    // 4. Allocate the array inside the JVM
+    jlongArray result = env->NewLongArray(length);
+    if (result == nullptr) {
+        return nullptr; // JVM threw an OutOfMemoryError, return safely
+    }
+
+    // 5. Create a bridge buffer strictly of type 'jlong'
+    // This ensures that even if 'din_t' (unsigned long) is a different bit-width
+    // than Java's 'long' (64-bit), the data translates safely.
+    std::vector<jlong> tempBuffer(length);
+    for (jsize i = 0; i < length; ++i) {
+        tempBuffer[i] = static_cast<jlong>(list[i]);
+    }
+
+    // 6. Copy the data from our C++ buffer into the JVM array
+    env->SetLongArrayRegion(result, 0, length, tempBuffer.data());
+
+    // 7. Return the Java array
+    return result;
 }
