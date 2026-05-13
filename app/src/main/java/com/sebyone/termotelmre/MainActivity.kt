@@ -12,9 +12,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,264 +32,338 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            TermotelApp(viewModel)
+        }
+    }
+}
 
-            var discoveryInput by remember { mutableStateOf("") }
-            var showDiscoveryList by remember { mutableStateOf(false) }
-            var configSidInput by remember { mutableStateOf("") }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TermotelApp(viewModel: MainViewModel) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showDiscoveryList by remember { mutableStateOf(false) }
 
-            val permissionsLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestMultiplePermissions()
-            ) { /* Handle results if needed */ }
+    // Dialog states
+    var showMapDialog by remember { mutableStateOf(false) }
+    var showDdoDialog by remember { mutableStateOf(false) }
+    var showDiscoveryInputDialog by remember { mutableStateOf(false) }
 
-            LaunchedEffect(Unit) {
-                val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    arrayOf(
-                        Manifest.permission.BLUETOOTH_SCAN,
-                        Manifest.permission.BLUETOOTH_CONNECT,
-                        Manifest.permission.BLUETOOTH_ADVERTISE
-                    )
-                } else {
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                }
-                permissionsLauncher.launch(permissions)
-            }
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { /* Handle results if needed */ }
 
-            var inputDin by remember { mutableStateOf("") }
-            var inputValue by remember { mutableStateOf("") }
-            var inputTypeset by remember { mutableStateOf("") }
-            var inputUri by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_ADVERTISE
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        }
+        permissionsLauncher.launch(permissions)
+    }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Device DIN: ${viewModel.localDin}", fontSize = 18.sp)
-                    Button(onClick = { viewModel.randomizeDin() }) {
-                        Text("RANDOMIZE DIN")
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Device URI: ${viewModel.localUri}", fontSize = 18.sp)
-                    Button(onClick = { viewModel.randomizeUri() }) {
-                        Text("RANDOMIZE URI")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = { viewModel.startSequence() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("START AGENT")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = { viewModel.triggerDiscovery(viewModel.driverBle) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("DISCOVER BLE")
-                    }
-                    Button(
-                        onClick = { viewModel.triggerDiscovery(viewModel.driverInet4) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("DISCOVER INET4")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Discovery Input:", fontSize = 14.sp)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = discoveryInput,
-                        onValueChange = { discoveryInput = it },
-                        label = { Text("Input") },
-                        placeholder = { Text("SID, es. 100") },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Button(
-                        onClick = {
-                            viewModel.triggerDiscoveryInput(discoveryInput)
-                        }
-                    ) {
-                        Text("Discovery(input)")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Termotel MRE") },
+                actions = {
+                    IconButton(onClick = {
                         showDiscoveryList = !showDiscoveryList
                         if (showDiscoveryList) {
                             viewModel.refreshAcceptedDins()
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (showDiscoveryList) "SHOW CONSOLE" else "SHOW DISCOVERY LIST")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Common Parameters (DIN / URI):", fontSize = 14.sp)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = inputDin,
-                        onValueChange = { inputDin = it },
-                        label = { Text("DIN") },
-                        placeholder = { Text("123") },
-                        modifier = Modifier.weight(0.4f)
-                    )
-                    OutlinedTextField(
-                        value = inputUri,
-                        onValueChange = { inputUri = it },
-                        label = { Text("URI") },
-                        placeholder = { Text("aabbcc11") },
-                        modifier = Modifier.weight(0.6f)
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        val din = inputDin.toLongOrNull() ?: 0L
-                        viewModel.mapDevice(din, inputUri, viewModel.driverBle)
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                ) {
-                    Text("MAP DEVICE (BLE)")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Send DDO Parameters (DIN / Value / Type):", fontSize = 14.sp)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = inputDin,
-                        onValueChange = { inputDin = it },
-                        label = { Text("DIN") },
-                        placeholder = { Text("123") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = inputValue,
-                        onValueChange = { inputValue = it },
-                        label = { Text("Value") },
-                        placeholder = { Text("0") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = inputTypeset,
-                        onValueChange = { inputTypeset = it },
-                        label = { Text("Typeset") },
-                        placeholder = { Text("1") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        val din = inputDin.toLongOrNull() ?: 0L
-                        val value = inputValue.toIntOrNull()?.toLong() ?: 0
-                        val typeset = inputTypeset.toIntOrNull() ?: 0
-                        viewModel.sendTestDDO(din, value, typeset)
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                ) {
-                    Text("SEND TEST DDO")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Terminal-like output
-                if (showDiscoveryList) {
-
-                    OutlinedTextField(
-                        value = configSidInput,
-                        onValueChange = { configSidInput = it },
-                        label = { Text("SID config") },
-                        placeholder = { Text("100") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black)
-                            .padding(8.dp)
-                    ) {
-                        items(viewModel.discoveredDins) { din ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "DIN: $din",
-                                    color = Color.Green,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 14.sp
-                                )
-
-                                Button(
-                                    onClick = {
-                                        val sid = configSidInput.toLongOrNull() ?: 0L
-                                        viewModel.sendNetworkConfiguration(din, sid)
-                                    }
-                                ) {
-                                    Text("SEND CONFIG")
-                                }
-                            }
-                        }
+                    }) {
+                        Icon(
+                            imageVector = if (showDiscoveryList) Icons.Default.Menu else Icons.AutoMirrored.Filled.List,
+                            contentDescription = "Toggle View"
+                        )
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black)
-                            .padding(8.dp),
-                        reverseLayout = true
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
                     ) {
-                        items(viewModel.consoleLogs) { log ->
-                            Text(
-                                text = log,
-                                color = Color.Green,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
+                        DropdownMenuItem(
+                            text = { Text("Randomize DIN") },
+                            onClick = {
+                                viewModel.randomizeDin()
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Randomize URI") },
+                            onClick = {
+                                viewModel.randomizeUri()
+                                showMenu = false
+                            }
+                        )
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = { Text("Map Device (BLE)") },
+                            onClick = {
+                                showMapDialog = true
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Send Test DDO") },
+                            onClick = {
+                                showDdoDialog = true
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Discovery by SID") },
+                            onClick = {
+                                showDiscoveryInputDialog = true
+                                showMenu = false
+                            }
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            // Status Section
+            Surface(
+                tonalElevation = 2.dp,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Device DIN: ${viewModel.localDin}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Device URI: ${viewModel.localUri}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Primary Actions
+            Button(
+                onClick = { viewModel.startSequence() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("START AGENT")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { viewModel.triggerDiscovery(viewModel.driverBle) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("DISCOVER BLE")
+                }
+                Button(
+                    onClick = { viewModel.triggerDiscovery(viewModel.driverInet4) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("DISCOVER INET4")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = if (showDiscoveryList) "Discovery List" else "Console Logs",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Console / List Area
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(Color.Black, shape = MaterialTheme.shapes.extraSmall)
+                    .padding(8.dp)
+            ) {
+                if (showDiscoveryList) {
+                    DiscoveryListView(viewModel)
+                } else {
+                    ConsoleView(viewModel)
+                }
+            }
+        }
+    }
+
+    // Dialogs
+    if (showMapDialog) {
+        MapDeviceDialog(viewModel) { showMapDialog = false }
+    }
+    if (showDdoDialog) {
+        SendDdoDialog(viewModel) { showDdoDialog = false }
+    }
+    if (showDiscoveryInputDialog) {
+        DiscoveryInputDialog(viewModel) { showDiscoveryInputDialog = false }
+    }
+}
+
+@Composable
+fun ConsoleView(viewModel: MainViewModel) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        reverseLayout = true
+    ) {
+        items(viewModel.consoleLogs) { log ->
+            Text(
+                text = log,
+                color = Color.Green,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun DiscoveryListView(viewModel: MainViewModel) {
+    var configSidInput by remember { mutableStateOf("") }
+    Column {
+        OutlinedTextField(
+            value = configSidInput,
+            onValueChange = { configSidInput = it },
+            label = { Text("Config SID", color = Color.LightGray) },
+            placeholder = { Text("100") },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodySmall.copy(color = Color.Green),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Green,
+                unfocusedBorderColor = Color.Gray,
+                focusedTextColor = Color.Green
+            )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(viewModel.discoveredDins) { din ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "DIN: $din",
+                        color = Color.Green,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 14.sp
+                    )
+
+                    Button(
+                        onClick = {
+                            val sid = configSidInput.toLongOrNull() ?: 0L
+                            viewModel.sendNetworkConfiguration(din, sid)
+                        },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text("CONFIG", fontSize = 12.sp)
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun MapDeviceDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
+    var inputDin by remember { mutableStateOf("") }
+    var inputUri by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Map Device (BLE)") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = inputDin, onValueChange = { inputDin = it }, label = { Text("DIN") })
+                OutlinedTextField(value = inputUri, onValueChange = { inputUri = it }, label = { Text("URI") })
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val din = inputDin.toLongOrNull() ?: 0L
+                viewModel.mapDevice(din, inputUri, viewModel.driverBle)
+                onDismiss()
+            }) { Text("Map") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun SendDdoDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
+    var inputDin by remember { mutableStateOf("") }
+    var inputValue by remember { mutableStateOf("") }
+    var inputTypeset by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Send Test DDO") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = inputDin, onValueChange = { inputDin = it }, label = { Text("DIN") })
+                OutlinedTextField(value = inputValue, onValueChange = { inputValue = it }, label = { Text("Value") })
+                OutlinedTextField(value = inputTypeset, onValueChange = { inputTypeset = it }, label = { Text("Typeset") })
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val din = inputDin.toLongOrNull() ?: 0L
+                val value = inputValue.toIntOrNull()?.toLong() ?: 0
+                val typeset = inputTypeset.toIntOrNull() ?: 0
+                viewModel.sendTestDDO(din, value, typeset)
+                onDismiss()
+            }) { Text("Send") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun DiscoveryInputDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
+    var discoveryInput by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Discovery by SID") },
+        text = {
+            OutlinedTextField(
+                value = discoveryInput,
+                onValueChange = { discoveryInput = it },
+                label = { Text("SID") },
+                placeholder = { Text("e.g. 100") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = {
+                viewModel.triggerDiscoveryInput(discoveryInput)
+                onDismiss()
+            }) { Text("Discover") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }
