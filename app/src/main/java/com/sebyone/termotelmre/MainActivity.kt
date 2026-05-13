@@ -381,21 +381,21 @@ fun DiscoveryInputDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
 
 @Composable
 fun GetAllNodesDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
-    var inputDin by remember { mutableStateOf(viewModel.localDin.toString()) }
+    var inputSid by remember { mutableStateOf(viewModel.deviceSid.toString()) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Get All Nodes") },
         text = {
             OutlinedTextField(
-                value = inputDin,
-                onValueChange = { inputDin = it },
-                label = { Text("DIN") },
-                placeholder = { Text("Node DIN") }
+                value = inputSid,
+                onValueChange = { inputSid = it },
+                label = { Text("SID") },
+                placeholder = { Text("SID") }
             )
         },
         confirmButton = {
             Button(onClick = {
-                val din = inputDin.toLongOrNull() ?: 0L
+                val din = inputSid.toLongOrNull() ?: 0L
                 viewModel.getAllNodes(din)
                 onDismiss()
             }) { Text("Get") }

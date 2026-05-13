@@ -72,7 +72,7 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
         private set
 
 
-    private val deviceSid = 100L //DEFAULT
+    var deviceSid = 100L //DEFAULT
     private val cloudNodeDin = 103L
     private val expectedFanUpDin = 0L // UPDATE THIS IF YOU KNOW THE DIN, or leave 0 to accept any
     private val cloudUri = "158.220.97.43:3030"
@@ -142,11 +142,11 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
         }
     }
 
-    fun getAllNodes(din: Long) {
-        appendLog("Requesting all nodes from DIN=$din")
+    fun getAllNodes(sid: Long) {
+        appendLog("Requesting all nodes from SID=$sid")
         viewModelScope.launch(Dispatchers.IO) {
-            val nodes = DaasManager.getAllNodes(din)
-            appendLog("Nodes from $din: ${nodes.joinToString(", ")}")
+            val nodes = DaasManager.getAllNodes(sid)
+            appendLog("Nodes from $sid: ${nodes.joinToString(", ")}")
         }
     }
 
