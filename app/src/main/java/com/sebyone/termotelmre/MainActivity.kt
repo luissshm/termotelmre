@@ -47,6 +47,7 @@ fun TermotelApp(viewModel: MainViewModel) {
     var showMapDialog by remember { mutableStateOf(false) }
     var showDdoDialog by remember { mutableStateOf(false) }
     var showDiscoveryInputDialog by remember { mutableStateOf(false) }
+    var showGetAllNodesDialog by remember { mutableStateOf(false) }
 
     val permissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -123,6 +124,13 @@ fun TermotelApp(viewModel: MainViewModel) {
                             text = { Text("Discovery by SID") },
                             onClick = {
                                 showDiscoveryInputDialog = true
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Get All Nodes") },
+                            onClick = {
+                                showGetAllNodesDialog = true
                                 showMenu = false
                             }
                         )
@@ -214,6 +222,9 @@ fun TermotelApp(viewModel: MainViewModel) {
     }
     if (showDiscoveryInputDialog) {
         DiscoveryInputDialog(viewModel) { showDiscoveryInputDialog = false }
+    }
+    if (showGetAllNodesDialog) {
+        GetAllNodesDialog(viewModel) { showGetAllNodesDialog = false }
     }
 }
 
@@ -361,6 +372,33 @@ fun DiscoveryInputDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
                 viewModel.triggerDiscoveryInput(discoveryInput)
                 onDismiss()
             }) { Text("Discover") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun GetAllNodesDialog(viewModel: MainViewModel, onDismiss: () -> Unit) {
+    var inputDin by remember { mutableStateOf(viewModel.localDin.toString()) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Get All Nodes") },
+        text = {
+            OutlinedTextField(
+                value = inputDin,
+                onValueChange = { inputDin = it },
+                label = { Text("DIN") },
+                placeholder = { Text("Node DIN") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = {
+                val din = inputDin.toLongOrNull() ?: 0L
+                viewModel.getAllNodes(din)
+                onDismiss()
+            }) { Text("Get") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }

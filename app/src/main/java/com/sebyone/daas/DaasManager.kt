@@ -47,6 +47,7 @@ object DaasManager {
     external fun nativeRemove(din: Long)
 
     external fun nativeGetSystemStatistics(syscode: Int): Long
+    external fun nativeGetAllNodes(din: Long): LongArray
 
     fun startAgent(sid: Long, din: Long, localUri: String, driver: Byte) {
         redirectLogs()
@@ -103,6 +104,10 @@ object DaasManager {
 
     fun unbindNetwork() {
         nativeUnbindNetwork()
+    }
+
+    fun getAllNodes(din: Long): LongArray {
+        return nativeGetAllNodes(din)
     }
 
     @JvmStatic

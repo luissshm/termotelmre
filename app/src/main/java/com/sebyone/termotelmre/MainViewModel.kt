@@ -142,6 +142,14 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
         }
     }
 
+    fun getAllNodes(din: Long) {
+        appendLog("Requesting all nodes from DIN=$din")
+        viewModelScope.launch(Dispatchers.IO) {
+            val nodes = DaasManager.getAllNodes(din)
+            appendLog("Nodes from $din: ${nodes.joinToString(", ")}")
+        }
+    }
+
     fun mapDevice(din: Long, uri: String, driver: Byte) {
         appendLog("Mapping device: DIN=$din, URI=$uri, Driver=$driver")
         viewModelScope.launch(Dispatchers.IO) {
