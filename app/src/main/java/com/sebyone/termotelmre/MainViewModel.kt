@@ -134,6 +134,13 @@ class MainViewModel : ViewModel(), DaasManager.dynamicListener {
         }
     }
 
+    fun triggerJoin() {
+        appendLog("Triggering Join()...")
+        viewModelScope.launch(Dispatchers.IO) {
+            DaasManager.join()
+        }
+    }
+
     fun sendTestDDO(din: Long, value: Long, typeset: Int) {
         appendLog("Sending DDO to $din: val=$value, type=$typeset")
         viewModelScope.launch(Dispatchers.IO) {

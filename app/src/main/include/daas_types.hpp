@@ -73,11 +73,10 @@ typedef enum : unsigned // Supported communications technologies
     _LINK_NONE = 0, // ND
     _LINK_DAAS,     // DaaS routing & loopback
     _LINK_INET4,    // Inet/IP
-    _LINK_BT, // Bluetooth
-    _LINK_BLE, // BLE
+    _LINK_LORA,     // LoRa
+    _LINK_BLE,      // BLE
     _LINK_MQTT5,    // MQTT
     _LINK_UART,     // Serial line
-    _LINK_LORA,     // LoRa
     _LINK_ZIGBEE,   // Zigbee
     _LINK_RAW,
     _LINK_LEGACY,  // Legacy driver (TUN/TAP)

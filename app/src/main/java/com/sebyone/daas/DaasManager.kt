@@ -31,6 +31,7 @@ object DaasManager {
     external fun nativeListDrivers(): String
     external fun nativeAutoPull(remoteDin: Long)
     external fun nativeDiscovery(driver: Byte, sid: Long)
+    external fun nativeJoin(): Long
 
     external fun nativeSimpleDiscovery(sid: Long): Int
 
@@ -72,6 +73,11 @@ object DaasManager {
     fun discovery(driver: Byte, sid: Long) {
         val r = nativeDiscovery(driver, sid)
         Log.d(TAG, "discovery result = $r")
+    }
+
+    fun join() {
+        val r = nativeJoin()
+        Log.d(TAG, "join result = $r")
     }
 
     fun setDiscoveryState(state: Int) {

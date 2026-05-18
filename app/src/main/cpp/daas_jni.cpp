@@ -277,6 +277,21 @@ Java_com_sebyone_daas_DaasManager_nativeDiscovery(
     LOGD("[DaaS] discovery(%d) -> %d", driver, err);
     return err;
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_sebyone_daas_DaasManager_nativeJoin(
+        JNIEnv*, jclass) {
+
+    LOGD("[DaaS] Initializing join");
+
+    g_daas->unbindNetwork();
+    auto err = g_daas->join();
+
+    LOGD("[DaaS] join() -> %d", err);
+    return err;
+}
+
 #include <unistd.h>
 static void* stdout_to_logcat(void*) {
     int pipes[2];

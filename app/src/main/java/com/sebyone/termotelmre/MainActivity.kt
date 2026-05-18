@@ -174,10 +174,10 @@ fun TermotelApp(viewModel: MainViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { viewModel.triggerDiscovery(viewModel.driverBle) },
+                    onClick = { viewModel.triggerJoin() },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("DISCOVER BLE")
+                    Text("JOIN")
                 }
                 Button(
                     onClick = { viewModel.triggerDiscovery(viewModel.driverInet4) },
