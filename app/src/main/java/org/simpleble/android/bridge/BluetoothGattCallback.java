@@ -1,15 +1,9 @@
 package org.simpleble.android.bridge;
 
-import android.Manifest;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothProfile;
-import android.content.pm.PackageManager;
 import android.util.Log;
-
-import androidx.annotation.RequiresPermission;
-import androidx.core.app.ActivityCompat;
 
 public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallback {
 
@@ -49,10 +43,8 @@ public class BluetoothGattCallback extends android.bluetooth.BluetoothGattCallba
         onCharacteristicWriteCallback(gatt, characteristic, status);
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-
         super.onConnectionStateChange(gatt, status, newState);
         onConnectionStateChangeCallback(gatt, status, newState);
     }

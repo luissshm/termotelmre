@@ -402,6 +402,7 @@ struct node_network_info_t
 struct node_map_entry_t
 {
     din_t din;
+    din_t channel_owner;
     link_t link;
     char uri[256];
     bool direct_channel;

@@ -312,14 +312,14 @@ static void* stdout_to_logcat(void*) {
 extern "C" JNIEXPORT void JNICALL
 Java_com_sebyone_daas_DaasManager_redirectLogs(JNIEnv*, jobject) {
     // Activate only for debug
-    return;
-    /*__android_log_print(ANDROID_LOG_DEBUG, "DAAS_NATIVE", "redirectLogs called"); // ← confirm JNI works
+//    return;
+    __android_log_print(ANDROID_LOG_DEBUG, "DAAS_NATIVE", "redirectLogs called"); // ← confirm JNI works
     pthread_t t;
     pthread_create(&t, nullptr, stdout_to_logcat, nullptr);
     pthread_detach(t);
 
     setvbuf(stdout, nullptr, _IONBF, 0);
-    setvbuf(stderr, nullptr, _IONBF, 0);*/
+    setvbuf(stderr, nullptr, _IONBF, 0);
 }
 
 

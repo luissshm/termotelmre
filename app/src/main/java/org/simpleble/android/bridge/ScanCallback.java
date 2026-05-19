@@ -3,6 +3,7 @@ package org.simpleble.android.bridge;
 import android.bluetooth.le.ScanResult;
 
 import java.util.List;
+import android.util.Log;
 
 public class ScanCallback extends android.bluetooth.le.ScanCallback {
 
