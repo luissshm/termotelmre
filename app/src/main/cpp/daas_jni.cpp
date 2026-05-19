@@ -15,12 +15,15 @@ static const typeset_t SIMPLE_TYPESET = 1;
 
 /* ---------------- Events ---------------- */
 
+din_t last_discovered_sid = 0;
+bool network_already_configured = false;
+
 class DaasEvents : public IDaasApiEvent {
 public:
     void dinAccepted(din_t din) override {
         LOGD("[DaaS] dinAccepted %lu", (din >> 44));
 
-        JNIEnv* env;
+        JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
 
         jmethodID mid = env->GetStaticMethodID(g_daas_manager, "onDinAccepted", "(J)V");
@@ -38,7 +41,7 @@ public:
             return;
 
         // Attach JNI
-        JNIEnv* env;
+        JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
 
         din_t realDin = origin >> 44;
@@ -123,30 +126,17 @@ public:
         delete ddo;
     }
 
-    void nodeDiscovered(din_t din, link_t link) override {
-        LOGD("[DaaS] Node Discovered DIN=%lu LINK=%d", din, link);
-
-        if (!g_vm) return;
-
-        JNIEnv* env = nullptr;
-        g_vm->AttachCurrentThread(&env, nullptr);
-
-
-        jmethodID mid = env->GetStaticMethodID(g_daas_manager,
-                                               "onNodeDiscovered",
-                                               "(J)V");
-
-        if (!mid) {
-            LOGD("[JNI] Failed to find onNodeDiscovered method");
-            return;
-        }
-
-        env->CallStaticVoidMethod(g_daas_manager, mid, (jlong)din);
+    void networkDiscovered(din_t din, din_t sid, link_t link) override {
+        if (last_discovered_sid == 0)
+            last_discovered_sid = sid;
+        else if (last_discovered_sid != 0 && last_discovered_sid != sid)
+            network_already_configured = true;
+        LOGD("[DaaS] Received sid %lu from din %lu with link %d", sid, din, link);
     }
 
     void nodeConnectedToNetwork(din_t sid, din_t din) override {
         LOGD("[DaaS] nodeConnectedToNetwork sid=%lu din=%lu", sid, (din >> 44));
-        JNIEnv* env;
+        JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
 
         jmethodID mid = env->GetStaticMethodID(g_daas_manager, "onNetworkConnected", "(J)V");
@@ -171,19 +161,26 @@ static DaasEvents g_events;
 extern void set_jvm(JavaVM* jvm);
 extern "C"
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
-    set_jvm(vm);
+    // 1. Save the global reference first
     g_vm = vm;
 
-    JNIEnv* env;
+    // 2. Call GetEnv IMMEDIATELY, before any external code can touch 'vm'
+    JNIEnv* env = nullptr;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;
     }
 
+    // 3. Do your standard JNI setup
     jclass localClass = env->FindClass("com/sebyone/daas/DaasManager");
     if (localClass != nullptr) {
         g_daas_manager = (jclass) env->NewGlobalRef(localClass);
         env->DeleteLocalRef(localClass);
     }
+
+    // 4. Call the external function LAST.
+    // (If the app still crashes here, you know for a fact set_jvm is broken)
+    set_jvm(vm);
+
     return JNI_VERSION_1_6;
 }
 
@@ -345,7 +342,7 @@ Java_com_sebyone_daas_DaasManager_nativeListNodes(
     }
 
     // Get the local node list
-    dinlist_t nodes = g_daas->listNodes();
+    network_info_list_t nodes = g_daas->listNodes();
     jsize count = static_cast<jsize>(nodes.size());
 
     LOGD("[DaaS] List Nodes -> %d nodes", count);
@@ -360,7 +357,7 @@ Java_com_sebyone_daas_DaasManager_nativeListNodes(
     // Copy values into Java array
     std::vector<jlong> tmp(count);
     for (jsize i = 0; i < count; ++i) {
-        tmp[i] = static_cast<jlong>(nodes[i]);
+        tmp[i] = static_cast<jlong>(nodes[i].din);
     }
     env->SetLongArrayRegion(jnodes, 0, count, tmp.data());
 
