@@ -3,6 +3,7 @@ package org.simpleble.android.bridge;
 import android.bluetooth.le.ScanResult;
 
 import java.util.List;
+import android.util.Log;
 
 public class ScanCallback extends android.bluetooth.le.ScanCallback {
 
@@ -26,10 +27,10 @@ public class ScanCallback extends android.bluetooth.le.ScanCallback {
         onScanFailedCallback(errorCode);
     }
 
-    private native void onScanResultCallback(int callbackType, android.bluetooth.le.ScanResult result);
+    private native void onScanResultCallback(int callbackType, ScanResult result);
 
     private native void onScanFailedCallback(int errorCode);
 
-    private native void onBatchScanResultsCallback(List<android.bluetooth.le.ScanResult> results);
+    private native void onBatchScanResultsCallback(List<ScanResult> results);
 
 }

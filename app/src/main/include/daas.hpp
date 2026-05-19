@@ -1,38 +1,38 @@
 /*
- * DaaS-IoT 2019, 2026 (@) Sebyone Srl
- *
- * File: daas.h
- *
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- *
- * Disclaimer of Warrant
- * Covered Software is provided under this License on an "as is" basis, without warranty of any kind, either
- * expressed, implied, or statutory, including, without limitation, warranties that the Covered  Software is
- * free of defects, merchantable, fit for a particular purpose or non-infringing.
- * The entire risk as to the quality and performance of the Covered Software is with You.  Should any Covered
- * Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary
- * servicing, repair, or correction.
- * This disclaimer of warranty constitutes an essential part of this License.  No use of any Covered Software
- * is authorized under this License except under this disclaimer.
- *
- * Limitation of Liability
- * Under no circumstances and under no legal theory, whether tort (including negligence), contract, or otherwise,
- * shall any Contributor, or anyone who distributes Covered Software as permitted above, be liable to You for
- * any direct, indirect, special, incidental, or consequential damages of any character including, without
- * limitation, damages for lost profits, loss of goodwill, work stoppage, computer failure or malfunction,
- * or any and all other commercial damages or losses, even if such party shall have been informed of the
- * possibility of such damages.  This limitation of liability shall not apply to liability for death or personal
- * injury resulting from such party's negligence to the extent applicable law prohibits such limitation.
- * Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages, so this
- * exclusion and limitation may not apply to You.
- *
- * Contributors:
- * plogiacco@smartlab.it - initial design, implementation and documentation
- * sebastiano.meduri@gmail.com  - initial design, implementation and documentation
- * l.grillo@sebyone.it  - implementation and documentation
- *
- */
+* DaaS-IoT 2019, 2026 (@) Sebyone Srl
+*
+* File: daas.h
+*
+* This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+* If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*
+* Disclaimer of Warrant
+* Covered Software is provided under this License on an "as is" basis, without warranty of any kind, either
+* expressed, implied, or statutory, including, without limitation, warranties that the Covered  Software is
+* free of defects, merchantable, fit for a particular purpose or non-infringing.
+* The entire risk as to the quality and performance of the Covered Software is with You.  Should any Covered
+* Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary
+* servicing, repair, or correction.
+* This disclaimer of warranty constitutes an essential part of this License.  No use of any Covered Software
+* is authorized under this License except under this disclaimer.
+*
+* Limitation of Liability
+* Under no circumstances and under no legal theory, whether tort (including negligence), contract, or otherwise,
+* shall any Contributor, or anyone who distributes Covered Software as permitted above, be liable to You for
+* any direct, indirect, special, incidental, or consequential damages of any character including, without
+* limitation, damages for lost profits, loss of goodwill, work stoppage, computer failure or malfunction,
+* or any and all other commercial damages or losses, even if such party shall have been informed of the
+* possibility of such damages.  This limitation of liability shall not apply to liability for death or personal
+* injury resulting from such party's negligence to the extent applicable law prohibits such limitation.
+* Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages, so this
+* exclusion and limitation may not apply to You.
+*
+* Contributors:
+* plogiacco@smartlab.it - initial design, implementation and documentation
+* sebastiano.meduri@gmail.com  - initial design, implementation and documentation
+* l.grillo@sebyone.it  - implementation and documentation
+*
+*/
 
 #ifndef DAAS_H
 #define DAAS_H
@@ -49,52 +49,54 @@ public:
     DaasAPI(IDaasApiEvent *, const char *lhver_); 
     ~DaasAPI();
 
-    //////////////////////////////////////////////////////////////////////
-    ////  G E N E R A L S                                             ////
-    //////////////////////////////////////////////////////////////////////
-
     /**
-    @details Retrieves the version of the DaaS API library.
-    @param none
-    @returns A string representing the version of the DaaS API library.
-    @end
+        @details Retrieves the version of the DaaS API library.
+        @since 0.19.0
+        @param none
+        @returns A string representing the version of the DaaS API library.
+        @end
     */
     const char *getVersion();
 
     /**
-    @details Retrieves build information of the DaaS API library.
-    @param none
-    @returns A string containing build information such as compiler version and build configuration.
-    @end
+        @details Retrieves build information of the DaaS API library.
+        @since 0.19.0
+        @param none
+        @returns A string containing build information such as compiler version and build configuration.
+        @end
     */
     const char *getBuildInfo();
 
     /**
-    @details Lists all available drivers in the DaaS stack for this node.
-    @param none
-    @returns A semicolon-separated string containing the list of available drivers.
-    @end
+        @details Lists all available drivers in the DaaS stack for this node.
+        @since 0.19.0
+        @param none
+        @returns A semicolon-separated string containing the list of available drivers.
+        @end
     */
     const char *listAvailableDrivers();
 
     /**
-    @details Releases resources and deactivates the node. 
-    @param none
-    @returns @b ERROR_NONE on success, or an error code on failure.
-    @end
-    */
-    daas_error_t doEnd();                         // releases resources and deactivates node
-   
-    /**
-        @details Resets the local node and clears all resources. It disconnects also from the network that it currently is.
+        @details Releases resources and deactivates the node. 
+        @since 0.17.0
         @param none
         @returns @b ERROR_NONE on success, or an error code on failure.
         @end
     */
-    daas_error_t doReset();                       // reset resources and restarts services
+    daas_error_t doEnd();                         // releases resources and deactivates node
+
+    /**
+        @details Resets the local node and clears all resources. It disconnects also from the network that it currently is.
+        @since 0.17.0
+        @param none
+        @returns @b ERROR_NONE on success, or an error code on failure.
+        @end
+    */
+    daas_error_t doReset();                       
     
     /**
         @details Initializes services and resources for the local node.
+        @since 0.17.0
         @param sid: SID of the local node
         @param din: DIN of the local node
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -104,13 +106,12 @@ public:
         @end
     */
     daas_error_t doInit(din_t sid, din_t din);  // initializes services and resources (Real-Time or Multi-Threading, release dependent)
-    
-    /**
 
+    /**
         @details Executes the node's main processing loop in either real-time or multi-threading mode. 
         It manages the node's internal state, including network communication, data processing, and synchronization with other nodes. 
         In @b multi-threading mode, it spawns internal threads to handle processing.
-        
+        @since 0.17.0
         @param mode:
         - @b PERFORM_CORE_THREAD for multi-threading mode
         - @b PERFORM_CORE_NO_THREAD for real-time mode
@@ -118,20 +119,20 @@ public:
         @returns @b ERROR_NONE on success, or an error code on failure.
 
         @note This function @b must be called if the node has to be operational. In @b multi-threading mode it has to be called only once,
-              while in @b real-time mode it has to be called cyclically.
+                while in @b real-time mode it has to be called cyclically.
 
         @see doInit
         @end
     */
     daas_error_t doPerform(performs_mode_t mode); // perform node's task ( in RT mode needs to be called cyclically)
-    
+
     /**
         @details Configure driver for network technology (links)
-        
+        @since 0.17.0
         @param driver_id: the communication technology to enable:
-                          - @b _LINK_INET4
-                          - @b _LINK_BLUETOOTH
-                          - @b and others as defined in link_t
+                            - @b _LINK_INET4
+                            - @b _LINK_BLUETOOTH
+                            - @b and others as defined in link_t
         @param local_uri: the physical address of the local node:
                             - For @b _LINK_INET4: a text string in the format "IP:PORT" (e.g., "192.168.1.2:4000")
                             - For @b _LINK_BLUETOOTH: a text string representing the Bluetooth address (e.g., "00:1A:7D:DA:71:13:CHANNEL")
@@ -146,12 +147,12 @@ public:
 
     /**
         @details Returns the status of the local node.
-       
+        @since 0.19.0
         @param none
         
         @returns the status of the local node.
         - This includes hardware version, linked channels, synchronization status, security policy, and more.
-    
+
         @end
     */
     node_info_t getStatus(); // returns local node's instance status
@@ -163,6 +164,8 @@ public:
      * The selected policy defines the validation rules applied to incoming
      * requests and can be tuned to enforce stricter security or allow
      * more flexible communication.
+     * 
+     * @since 0.21.6
      *
      * @param policy_level The trust policy to apply:
      * 
@@ -218,10 +221,10 @@ public:
      * @end
      */
     void setAcceptRequestsLevel(accept_request_policy_t policy_level);
-     
+        
     /**
         @details Saves the current configuration to the specified storage interface.
-        
+        @since 0.18.0
         @param storage_interface: the interface to save the configuration (e.g., a file system, database, etc.)
         
         @returns true if the backup was successful, false otherwise.
@@ -234,7 +237,7 @@ public:
 
     /**
         @details Loads the configuration from the specified storage interface.
-        
+        @since 0.18.0
         @param storage_interface: the interface to load the configuration from (e.g., a file system, database, etc.)
         
         @returns true if the configuration was loaded successfully, false otherwise.
@@ -244,10 +247,10 @@ public:
         @end
     */
     bool loadConfiguration(IDepot* storage_interface);
-    
+
     /**
         @details Resets the system's statistics data.
-
+        @since 0.18.0
         @param none
 
         @returns true if the reset was successful, false otherwise.
@@ -257,19 +260,19 @@ public:
 
     /**
         @details Returns the statistics of the local node for a specific system code.
-
+        @since 0.17.0
         @param label: the system code to get statistics for (e.g., _cor_dme_sended)
 
         @returns the system statistics for the given label.
         @end
     */
     uint64_t getSystemStatistics(syscode_t label); 
-   
+
     /* Mapping      -------------------------------------------------------------------------------------------- */
 
     /**
         @details Maps a remote node to the local instance. This is used to establish communication with other nodes in the network.
-       
+        @since 0.17.0
         @param din: DIN of the node to map
 
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -281,7 +284,7 @@ public:
 
     /**
         @details Maps a remote node to the local instance. This is used to establish communication with other nodes in the network.
-       
+        @since 0.17.0
         @param din: DIN of the node to map
         @param link: the communication technology to use: 
                         - @b _LINK_INET4 
@@ -294,16 +297,16 @@ public:
         @returns @b ERROR_NONE on success, or an error code on failure.
 
         @note The communication links supported depend on the build configuration and enabled drivers. 
-              Those can be listed using the @ref listAvailableDrivers() function.
+                Those can be listed using the @ref listAvailableDrivers() function.
 
         @see doInit
         @end
     */
     daas_error_t map(din_t din, link_t link, const char *suri);                   // adds node-identifier and related physical address ( link: 1="INET4", 2="UART", 3="MQTT5")
-    
+
     /**
         @details Maps a remote node to the local instance. This is used to establish communication with other nodes in the network.
-       
+        @since 0.17.0
         @param din: DIN of the node to map
 
         @param link: the communication technology to use: 
@@ -320,16 +323,16 @@ public:
         @returns @b ERROR_NONE on success, or an error code on failure.
 
         @note The communication links supported depend on the build configuration and enabled drivers. 
-              Those can be listed using the @ref listAvailableDrivers() function.
+                Those can be listed using the @ref listAvailableDrivers() function.
 
         @see doInit
         @end
     */
     daas_error_t map(din_t din, link_t link, const char *suri, const char *skey); // adds node-identifier and related physical address ( link: 1="INET4", 2="UART", 3="MQTT5")
-    
+
     /**
         @details Removes a node from the local instance and cleans up associated resources.
-
+        @since 0.17.0
         @param din: DIN of the node to remove
 
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -337,29 +340,14 @@ public:
     */
     daas_error_t remove(din_t din);
 
-    /**
-     *  @details Starts a discovery process to locate nodes in the network.\n 
-     *  This process will send the enabled drivers URI to a sort of broadcast in order to auto-map this node to remote ones.\n
-        @note The reception of this packet cannot be controlled, it can only be disabled.
-     
-        @param none : starts discovery on all available links
-
-        @note If the node is already connected to a network, it will automatically disconnect from the current network if it discovers a new one during the discovery process.
-
-        @returns @b ERROR_NONE on success, or an error code on failure.
-        @see doInit
-
-        \par Example:
-        \snippet examples/discovery/main.cpp discovery_without_init
-        @end
-     */
-      daas_error_t discovery();
 
     /**
-     *  @details Starts a discovery process to locate nodes in the network.\n 
-     *  This process will send the enabled drivers URI to a sort of broadcast in order to auto-map this node to remote ones.\n
+     *  @details Starts a discovery process to locate nearby DaaS networks. When a network is discovered, 
+     *  the event @ref IDaasApiEvent::networkDiscovered is triggered with the din of the host of the discovered network and the link through which it was discovered.
+     *  @since 0.21.0 
+     * 
         @note The reception of this packet cannot be controlled, it can only be disabled.
-     
+            
         @param link: The communication technology to use for discovery. If not specified, all available links will be used.
 
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -368,14 +356,16 @@ public:
         \par Example:
         \snippet examples/discovery/main.cpp discovery_without_init
         @end
-     */
-      daas_error_t discovery(link_t link);
+    */
+    daas_error_t discovery(link_t link = link_t::_LINK_NONE);
 
     /**
-     *  @details Starts a discovery process to locate nodes in the network.\n 
-     *  This process will send the enabled drivers URI to a sort of broadcast in order to auto-map this node to remote ones.\n
+     *  @details Starts a discovery process to locate nearby DaaS networks. When a network is discovered, 
+     *  the event @ref IDaasApiEvent::networkDiscovered is triggered with the din of the host of the discovered network and the link through which it was discovered.
+     *  @since 0.21.0 
+     * 
         @note The reception of this packet cannot be controlled, it can only be disabled.
-     
+        
         @param sid: The SID of the network to connect to.
 
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -384,15 +374,36 @@ public:
         \par Example:
         \snippet examples/discovery/main.cpp discovery_without_init
         @end
-     */
-      daas_error_t discovery(din_t sid);
+    */
+    daas_error_t discovery(din_t sid);
 
+
+    /**
+         * @details This function attempts to join the DaaS network. If a SID is provided, it will try to join the specified network associated with that SID. 
+         * If no SID is provided (i.e SID = 0), it will attempt to join the first available network discovered during the discovery process.
+         * @since 0.22.0
+         * @important Blocking Call
+         *  
+         * @note If the node is already part of a network, it will first leave the current network before attempting to join the new one.
+         * This could can cause interruption in communication, so it is recommended to call this function only when necessary 
+         * and to ensure that the node is not actively communicating with other nodes before joining a new network.
+         * 
+         * @warning Some nodes may have restrictions on communication with nodes from different networks. 
+         * In such cases, joining a new network may result in loss of communication with previously known nodes.
+         * 
+         * @param sid (optional): The SID of the network to join.
+         * @param link (optional): The communication link to use for joining. Use _LINK_NONE to use any available link. Default is _LINK_NONE.
+         * @param timeout (optional): Maximum time to wait for the join process to complete (in milliseconds). Default is 5000 ms.
+
+        * @returns @b ERROR_NONE on success, or an error code on failure.
+    */
+    daas_error_t join(din_t sid = 0, link_t link = _LINK_NONE, uint32_t timeout = 5000);
 
     /**
         @details Configures how the node interacts with the network discovery process. 
         Depending on the selected mode, the node can search for existing networks, 
         host new ones, or remain invisible to other nodes.
-
+        @since 0.21.0
         @param mode The discovery activation mode:
         - @b discovery_off: Completely disables discovery. The node will neither 
         send nor respond to discovery beacons.
@@ -406,50 +417,73 @@ public:
         @note By default, the node is set to @b discovery_sender_only mode upon initialization.
 
         @end
-     */
-      void setDiscoveryState(discovery_state_t mode); 
+    */
+    void setDiscoveryState(discovery_state_t mode); 
 
 
     /* Availability -------------------------------------------------------------------------------------------- */
-    
-    /**
-        @details Returns map entries (known nodes) in the local instance.
 
+        /**
+        @details Returns map entries (known nodes) in the local instance.
+        @since 0.17.0
         @param none
 
-        @returns a list of known nodes (din_t) in the local instance.
+        @warning The returned list includes only the nodes that are currently known to the local instance. 
+        The sid stored is the one used for the last communication with that node. 
+        So it might not be updated.
+
+        @returns a list of known nodes (din_t) with their respective sid_t in the local instance.
         @end
     */
-    dinlist_t listNodes();                       // Returns map entries  (knows nodes) ( din1, din2, )
-    
+    network_info_list_t listNodes(); // Returns map entries  (knows nodes) ( {din1, sid1}, {din2, sid2}, ... )
+
     /**
         @details It starts a process to locate the node if it is not inside the known table.
-        
-        @param din_: DIN of the node to locate
-        @param timeout: Maximum time to wait for the node to be located (in milliseconds). Default is 1000 ms.
+        @since 0.18.0
+        @important Blocking Call
 
-        @returns @b ERROR_NONE if the node is known, or an error code if it is not.
+        @param din_: DIN of the node to locate
+        @param timeout (optional): Maximum time to wait for the node to be located (in milliseconds). Default is 1000 ms.
+        @param ttl (optional): Maximum number of intermediate hops to reach the node. Default is 10.
+
+        @returns @b ERROR_NONE if the node is found, or an error code if it is not.
 
         @see pull
         @end
     */
-    daas_error_t locate(din_t din, int timeout = 1000); // Locate node if not inside known table (calls pull)
-    
+    daas_error_t locate(din_t din, int timeout = 1000, int ttl = 10); // Locate node if not inside known table (calls pull)
+
+    /**
+        @details It starts a process to locate any node with the specified feature.
+        @since 0.18.0
+        @important Blocking Call
+
+        @param feature: Feature to search for.
+        @param timeout (optional): Maximum time to wait for the node to be located (in milliseconds). Default is 1000 ms.
+        @param ttl (optional): Maximum number of intermediate hops to reach the node. Default is 10.
+
+        @returns @b ERROR_NONE if the node with the feature is found, or an error code if it is not.
+
+        @see pull
+        @end
+    */
+    daas_error_t locate(feature_t feature, int timeout = 1000, int ttl = 10); // Locate node if not inside known table (calls pull)
+
     /**
         @details Send the local node's status to a remote node.
-        
+        @since 0.19.0
         @param din: DIN of the remote node to send the status to
 
         @returns @b ERROR_NONE on success, or an error code on failure.
         @end
     */
     daas_error_t sendStatus(din_t din); // Send local status to remote node (din)
-    
+
     /**
         @details Fetches the status of a remote node.
 
         @param din: DIN of the remote node to fetch the status from
-        
+        @since 0.19.0
         @returns the node_info_t of the remote node.
         @end
     */
@@ -468,11 +502,11 @@ public:
 
     /**
         @details Time with ATS correction used to be able to communicate inside the DaaS network.
-        
+        @since 0.20.0
         @param none
 
         @attention This function returns the synchronized timestamp of the local node, only when connected to a DaaS network and ATS is in sync.
-                   If the node is not synchronized, the function returns the local system time without ATS correction.
+                    If the node is not synchronized, the function returns the local system time without ATS correction.
         
         @returns the synced timestamp of the local node.
         @end
@@ -480,7 +514,7 @@ public:
     uint64_t getSyncedTimestamp();
 
     /* Security     -------------------------------------------------------------------------------------------- */
-    
+
     /**
         @details Unlocks a remote node by setting its security key.
         
@@ -493,7 +527,6 @@ public:
         @end
     */
     const node_info_t& unlock(din_t din, const char *skey); 
-    
     /**
         @details Set SKEY and security policy for local node
         
@@ -508,7 +541,7 @@ public:
     const node_info_t& lock(const char *skey, unsigned policy_);
 
     /* Synchronize  -------------------------------------------------------------------------------------------- */
-    
+
     /**
         @details Set the local system time on remote node din and synchronize ATS.
 
@@ -538,7 +571,7 @@ public:
     /**
         @details Set the maximum error allowed for ATS synchronization. This value defines the acceptable time deviation between the local node and remote nodes in the network.
         The ATS mechanism uses this parameter to ensure that all nodes maintain a consistent time reference within the specified error margin. 
-        
+        @since 0.20.0
         @note By default, this value is set to @b 100 milliseconds.
         
         @param error: the maximum error in milliseconds
@@ -548,13 +581,16 @@ public:
     void setATSMaxError(int32_t error); 
 
     /* Exchange     -------------------------------------------------------------------------------------------- */
-    
+
     /**
      * @details Starts a real-time session with a remote node. This function establishes
      * a real-time communication channel with the specified remote node. All transmitted
      * data must be acknowledged (ACK) by the remote node. If the ACK is not received
      * within the specified timeout, the function retries sending the data for a
      * configured number of attempts.
+     * 
+     * @since 0.21.5
+     * @important Blocking Call
      *
      * @param din The DIN of the remote node with which to start the session.
      * @param rx_queue_size The size of the receive queue for incoming data from the remote node. If set to 0, a default size of 1024 will be used.
@@ -571,7 +607,7 @@ public:
 
     /**
         @details Ends a real-time session with a remote node.
-        
+        @since 0.21.5
         @param din: DIN of the remote node to end the session with
 
         @returns true if the RT session was successfully ended, false otherwise.
@@ -582,7 +618,9 @@ public:
 
     /**
         @details Sends data to a remote node in a real-time session.
-        
+        @since 0.21.5
+        @important Blocking Call
+
         @param din: DIN of the remote node to send data to
         @param outbound: pointer to the data to send
         @param size: size of the data to send
@@ -598,7 +636,7 @@ public:
 
     /**
         @details Checks if there is data available from a remote node in a real-time session.
-        
+        @since 0.21.5
         @param din: DIN of the remote node to check for data
 
         @returns the size of data received.
@@ -610,7 +648,7 @@ public:
 
     /**
         @details Receives data from a remote node in a real-time session.
-        
+        @since 0.21.5
         @param din: DIN of the remote node to receive data from
         @param inbound: reference to a variable that will hold the received data
 
@@ -623,21 +661,21 @@ public:
     /* Transfer     -------------------------------------------------------------------------------------------- */
     /**
         @details Returns a list of user-defined typesets.
-        
+        @since 0.21.3
         @param none
 
         @returns a reference to the list of user-defined typesets.
         
         @see addTypeset
         
-        @note The list is of type tsetlist_t, which is a Vector of typeset
+        @note The list is of type typeset_list, which is a Vector of typeset
         @end
     */
-    tsetlist_t &listTypesets();
-   
+    typeset_list &listTypesets();
+
     /**
         @details Pulls a DDO from a remote node.
-
+        @since 0.17.0
         @param din: DIN of the remote node to pull data from
         @param inboundDDO: pointer to a DDO pointer that will hold the pulled DDO
         
@@ -652,7 +690,7 @@ public:
 
     /**
         @details Pushes a DDO to a remote node.
-
+        @since 0.17.0
         @param din: DIN of the remote node to send data to
         @param outboundDDO: pointer to the DDO to send
 
@@ -667,10 +705,10 @@ public:
 
     /**
         @details Checks if there are available DDOs from a remote node.
-
+        @since 0.17.0
         @param din: DIN of the remote node to check for available DDOs
         @param count: reference to a variable that will hold the number of available DDOs
-       
+        
         @returns @b ERROR_NONE on success, or an error code on failure.
 
         @see pull
@@ -682,7 +720,7 @@ public:
     /**
         @details Maps a user-defined typeset to a handler function. If a DDO with the specified typeset is received,
         the provided handler function will be called.
-
+        @since 0.21.3
         @param typeset_code: the code of the typeset to add
         @param fun: The function to handle received DDOs of this typeset
 
@@ -696,13 +734,13 @@ public:
         @end
     */
     daas_error_t addTypeset(const uint16_t typeset_code, const typeset_fun fun);
-    
-    
+
+
     /* TEST */
 
     /**
         @details Pings a remote node to check its availability.
-
+        @since 0.20.0
         @param din: DIN of the remote node to ping
 
         @returns @b ERROR_NONE on success, or an error code on failure.
@@ -712,6 +750,8 @@ public:
 
     /**
         @details Pings a remote node with a specified timeout and retry count.
+        @since 0.20.0
+        @important Blocking Call
 
         @param din: DIN of the remote node to ping
         @param timeout: maximum time to wait for a reply (in milliseconds)
@@ -725,7 +765,9 @@ public:
     /**
      * @details Measures the data transfer performance toward a remote node by sending
      *          a sequence of test packets and evaluating the communication behavior.
-     *
+     * @since 0.20.0
+     * @important Blocking Call
+     * 
      * @param din DIN of the remote node to be tested.
      * @param sender_pkt_total Total number of packets to send.
      * @param block_size Size of each packet, expressed in bytes.
@@ -736,10 +778,10 @@ public:
      */
 
     daas_error_t frisbeeDPERF(din_t din, uint32_t sender_pkt_total = 10, uint32_t block_size = 1024*1024, uint32_t sender_trip_period = 0); 
-    
+
     /**
         @details Returns the result of the frisbeeDPERF test.
-        
+        @since 0.20.0
         @param none
         
         @returns a @b dperf_info_result structure containing the performance test results:
@@ -756,6 +798,7 @@ public:
 
     /**
         @details Sets the DDO policy for the local node. This policy determines how to manage the unsuccessful sending of DDOs.
+        @since 0.21.0
         @param policy: the DDO policy to set (ddo_policy_t)
             - @b ddo_policy_skip_on_failure: Skip sending the DDO on failure and deletes it from the sending buffer.
             - @b ddo_policy_retry_on_failure: Retry sending the DDO at every @ref doPerform cycle up to a maximum of 16 retries.
@@ -790,7 +833,7 @@ public:
      * @details Unbinds the local node from the current network by closing all open communication channels.
      *          The mapping table is preserved, allowing the node to rebind to the same network later
      *          without the need to remap previously known nodes.
-     *
+     * @since 0.21.3
      * @warning After unbinding, the node may no longer be able to communicate with some nodes
      *          of the previous network, depending on their @ref setAcceptRequestsLevel configuration.
      *
@@ -830,11 +873,59 @@ public:
 
     /**
      * @details Converts a DaaS error code to a human-readable string.
+     * @since 0.21.6
      * @param error_code The DaaS error code to convert.
      * 
      * @return A string describing the error code.
-     */
+    */
     const char* errorToString(daas_error_t error_code);
+
+    /**
+        @details Sets the features of the local node.
+        Feature descriptions:
+        - @b STORAGE: The node has storage capabilities. So inside a DaaS network, other nodes can store or delegate data (DDO for example) to/from this node.
+        - @b COMPUTATION: The node has computation capabilities. So inside a DaaS network, other nodes can delegate computation tasks to/from this node.
+        
+        @since 0.22.0
+
+        @param features: the features to set (STORAGE, COMPUTATION, etc.)
+    */
+    daas_error_t addNodeFeatures(feature_t features);
+
+    /**
+        @details Gets the enabled features of the local node.
+        @since 0.22.0
+        @param none
+
+        @returns the features of the local node (STORAGE, COMPUTATION, etc.)
+    */
+    features_list getNodeFeatures();
+
+    /**
+        @details Checks if a remote node has a specific feature enabled.
+        @since 0.22.0
+
+        @param din: DIN of the remote node to check
+        @param feature: the feature to check for (STORAGE, COMPUTATION, etc.)
+
+        @returns true if the remote node has the specified feature enabled, false otherwise.
+    */
+    bool nodeHasFeature(din_t din, feature_t feature);
+
+
+    /** 
+        @details Requests a specific feature from a remote node.
+        @since 0.22.0
+
+        @param din: DIN of the remote node to request the feature from
+        @param request: the feature to request crafted as a 
+        @param timeout: maximum time to wait for the response from the remote node (in milliseconds). Default is 1000 ms.
+
+        @returns @b ERROR_NONE if the feature is available and the request was successful, or an error code if the feature is not available or the request failed.
+    */
+    daas_error_t requestFeature(din_t din, feature_rq_t request, uint32_t timeout = 1000);
+
+
 };
 
 #endif // DAASIOT_H
