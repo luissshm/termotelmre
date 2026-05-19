@@ -16,8 +16,8 @@ class SimpleBleServer(context: Context, private val nativeHandle: Long) {
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private var gattServer: BluetoothGattServer? = null
 
-//    private external fun onNativeReadRequest(handle: Long, charUuid: String): ByteArray
-//    private external fun onNativeWriteRequest(handle: Long, charUuid: String, data: ByteArray)
+    private external fun onNativeReadRequest(handle: Long, charUuid: String): ByteArray
+    private external fun onNativeWriteRequest(handle: Long, charUuid: String, data: ByteArray)
 
     private val gattServerCallback = object : BluetoothGattServerCallback() {
         

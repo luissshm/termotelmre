@@ -22,7 +22,7 @@ bool network_already_configured = false;
 class DaasEvents : public IDaasApiEvent {
 public:
     void dinAccepted(din_t din) override {
-        LOGD("[DaaS] dinAccepted %lu", (din >> 44));
+        LOGD("[DaaS] dinAccepted %lu", (din >> 48));
 
         JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
@@ -30,12 +30,12 @@ public:
         jmethodID mid = env->GetStaticMethodID(g_daas_manager, "onDinAccepted", "(J)V");
 
         if (mid) {
-            env->CallStaticVoidMethod(g_daas_manager, mid, (jlong)(din >> 44));
+            env->CallStaticVoidMethod(g_daas_manager, mid, (jlong)(din >> 48));
         }
     }
 
     void ddoReceived(int payload_size, typeset_t typeset, din_t origin) override {
-        LOGD("[DaaS] ddoReceived from %lu size=%d typeset=%d", (origin >> 44), payload_size, typeset);
+        LOGD("[DaaS] ddoReceived from %lu size=%d typeset=%d", (origin >> 48), payload_size, typeset);
 
         DDO* ddo = nullptr;
         if (g_daas->pull(origin, &ddo) != ERROR_NONE || !ddo)
@@ -45,7 +45,7 @@ public:
         JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
 
-        din_t realDin = origin >> 44;
+        din_t realDin = origin >> 48;
 
         // EVENT DDO (typeset 3400, 6 bytes: 4+1+1)
         if (typeset == 3400 && payload_size >= 6) {
@@ -136,14 +136,14 @@ public:
     }
 
     void nodeConnectedToNetwork(din_t sid, din_t din) override {
-        LOGD("[DaaS] nodeConnectedToNetwork sid=%lu din=%lu", sid, (din >> 44));
+        LOGD("[DaaS] nodeConnectedToNetwork sid=%lu din=%lu", sid, (din >> 48));
         JNIEnv* env = nullptr;
         g_vm->AttachCurrentThread(&env, nullptr);
 
         jmethodID mid = env->GetStaticMethodID(g_daas_manager, "onNetworkConnected", "(J)V");
 
         if (mid) {
-            env->CallStaticVoidMethod(g_daas_manager, mid, (jlong)(din >> 44));
+            env->CallStaticVoidMethod(g_daas_manager, mid, (jlong)(din >> 48));
         }
     }
 
@@ -235,7 +235,7 @@ JNIEXPORT jint JNICALL
 Java_com_sebyone_daas_DaasManager_nativeMap(JNIEnv* env, jclass, din_t din, jstring uri, jbyte driver) {
     const char* c_uri = env->GetStringUTFChars(uri, nullptr);
 
-    din_t rawDin = din << 44; // <-- ADD THIS SHIFT
+    din_t rawDin = din << 48; // <-- ADD THIS SHIFT
     LOGD("[DaaS] Mapping DIN %lu (Logical: %lu) to %s", rawDin, din, c_uri);
 
     auto err = g_daas->map(rawDin, static_cast<link_t>(driver), c_uri); // Use rawDin here
@@ -433,7 +433,7 @@ Java_com_sebyone_daas_DaasManager_nativeSendDDOBytes(
     DDO ddo((typeset_t)tset);
     ddo.setPayload(reinterpret_cast<uint8_t*>(buffer.data()), len);
 
-    din_t rawDin = (din_t)remoteDin << 44; // <-- ADD THIS SHIFT
+    din_t rawDin = (din_t)remoteDin << 48; // <-- ADD THIS SHIFT
     LOGD("[DaaS] push(bytes) -> Logical DIN=%lu, Raw DIN=%lu", (unsigned long)remoteDin, rawDin);
 
     auto err = g_daas->push(rawDin, &ddo); // Use rawDin here
