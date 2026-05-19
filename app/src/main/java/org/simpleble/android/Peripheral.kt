@@ -20,6 +20,7 @@ class Peripheral internal constructor(newAdapterId: Long, newInstanceId: Long) {
         override fun onConnected() {
             CoroutineScope(Dispatchers.Main).launch {
                 _onConnected.emit(Unit)
+
             }
             CoroutineScope(Dispatchers.Main).launch {
                 _onConnectionActive.emit(true)
